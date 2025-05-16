@@ -1,10 +1,22 @@
 import { useState } from "react";
+import {
+  WiDaySunny,
+  WiCloudy,
+  WiRain,
+  WiHumidity,
+  WiStrongWind,
+  WiThermometer,
+} from "react-icons/wi";
 
 type WeatherData = {
   name: string;
   main: {
     temp: number;
     humidity: number;
+    feels_like: number;
+  };
+  wind: {
+    speed: number;
   };
   weather: {
     description: string;
@@ -18,7 +30,7 @@ const WeatherApp: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const API_KEY = "685ec8cb3f11174eaf7a7a2fb2b3d23a"; 
+  const API_KEY = "685ec8cb3f11174eaf7a7a2fb2b3d23a";
 
   const fetchWeather = async () => {
     if (!city) return;
@@ -33,11 +45,19 @@ const WeatherApp: React.FC = () => {
       setWeather(data);
     } catch (err) {
       console.log(err);
-      
+      setError("Could not fetch weather. Try again.");
       setWeather(null);
     } finally {
       setLoading(false);
     }
+  };
+
+  const getWeatherIcon = (iconCode: string) => {
+    if (iconCode.startsWith("01")) return <WiDaySunny size={80} />;
+    if (iconCode.startsWith("02") || iconCode.startsWith("03") || iconCode.startsWith("04"))
+      return <WiCloudy size={80} />;
+    if (iconCode.startsWith("09") || iconCode.startsWith("10")) return <WiRain size={80} />;
+    return <WiDaySunny size={80} />; 
   };
 
   return (
@@ -71,20 +91,33 @@ const WeatherApp: React.FC = () => {
           <h2 className="text-2xl font-bold text-blue-700 mb-2">
             {weather.name}
           </h2>
-          <img
-            src={`https://openweathermap.org/img/wn/${weather.weather[0].icon}@4x.png`}
-            alt={weather.weather[0].description}
-            className="mx-auto"
-          />
-          <p className="text-lg capitalize text-gray-700">
+
+          <div className="flex justify-center mb-4">
+            {getWeatherIcon(weather.weather[0].icon)}
+          </div>
+
+          <p className="text-lg capitalize text-gray-700 mb-2">
             {weather.weather[0].description}
           </p>
-          <p className="text-3xl font-semibold text-blue-900 mt-2">
-            {weather.main.temp}°C
-          </p>
-          <p className="text-sm text-gray-500 mt-1">
-            💧 Humidity: {weather.main.humidity}%
-          </p>
+
+          <div className="text-blue-900 space-y-1">
+            <p className="text-3xl font-semibold">{weather.main.temp}°C</p>
+
+            <p className="flex justify-center items-center gap-2 text-sm">
+              <WiThermometer className="text-red-500" size={20} />
+              Feels like: {weather.main.feels_like}°C
+            </p>
+
+            <p className="flex justify-center items-center gap-2 text-sm">
+              <WiHumidity className="text-blue-500" size={20} />
+              Humidity: {weather.main.humidity}%
+            </p>
+
+            <p className="flex justify-center items-center gap-2 text-sm">
+              <WiStrongWind className="text-gray-600" size={20} />
+              Wind: {weather.wind.speed} m/s
+            </p>
+          </div>
         </div>
       )}
     </div>
